@@ -1,7 +1,6 @@
 /* SeCien 2025 — Regresión Estatura–Peso (GitHub Pages compatible)
-   - Carga ESM de @mediapipe/tasks-vision con fallback y ?module en unpkg
-   - Sin scripts inline (evita CSP restrictiva)
-   - Detención correcta de cámara
+   MUESTREO CONTROLADO POR MANO: sólo captura cuando hay 5 dedos levantados,
+   una sola muestra por cada “levantada” (debounce por estabilidad temporal).
 */
 
 "use strict";
@@ -15,20 +14,22 @@ const canvas  = $("overlay");
 const ctx     = canvas.getContext("2d", { alpha: true });
 const btnStart= $("btnStart"), btnReset=$("btnReset"), btnCsv=$("btnCsv");
 const statusEl= document.querySelector(".camera-header .status");
-const hintEl  = $("hint");
 
 // KPIs
 const kNSamples=$("nSamples"), kHLast=$("hLast"), kWLast=$("wLast"),
       kBmiLast=$("bmiLast"), kPxcm=$("pxcm"), kFps=$("fps"), r2Span=$("r2val");
 
 // ==== Parámetros ====
-const SAMPLE_INTERVAL_MS = 1500; // 1.5 s
 const MAX_HISTORY        = 1000;
-const CAL_HAND_CM        = 15.0; // índice–meñique ≈ 15 cm
+const CAL_HAND_CM        = 15.0;   // índice–meñique ≈ 15 cm
 const CAL_SPAN_MIN_PX    = 30;
 const HEIGHT_RANGE       = [120, 200]; // cm
 const WEIGHT_RANGE       = [25, 150];  // kg
 const MP_VERSION         = "0.10.7";
+
+// Sólo cuando hay 5 dedos visibles:
+const HOLD_MIN_MS        = 600;    // estabilidad mínima de la mano con 5 dedos
+const SAMPLE_GAP_MS      = 400;    // separación mínima adicional entre muestras (seguridad)
 
 let FilesetResolver=null, HandLandmarker=null, PoseLandmarker=null;
 let handLandmarker=null, poseLandmarker=null;
@@ -37,11 +38,16 @@ let handLandmarker=null, poseLandmarker=null;
 let running=false, frameCount=0, lastTime=performance.now(), fps=0;
 let scalePxPerCm = null;
 let heightCalib=1.0, weightCalib=1.0;
-let nextSampleAt = performance.now() + SAMPLE_INTERVAL_MS;
 let mediaStream = null;
 
 // Datos
 const samples = []; // {t,h,w,bmi,pxcm}
+
+// Puerta de muestreo por “levantada”
+let fiveUp=false;            // ¿se detecta 5 dedos en este instante?
+let fiveUpSince=0;           // instante desde el que se detectan 5 dedos de forma continua
+let sampledThisHold=false;   // ¿ya se tomó muestra en esta “levantada”?
+let lastSampleAt=0;          // última muestra (ms)
 
 // ==== Utilidades ====
 function setStatus(msg, cls=""){ statusEl.textContent=msg; statusEl.className=`status ${cls}`; }
@@ -80,8 +86,8 @@ async function importTasksVision(){
   setStatus("Importando @mediapipe/tasks-vision…","warn");
   let mod=null, err;
   const tries = [
-    `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}`,  // ESM ok en jsDelivr
-    `https://unpkg.com/@mediapipe/tasks-vision@${MP_VERSION}?module`       // forzar ESM en unpkg
+    `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}`,
+    `https://unpkg.com/@mediapipe/tasks-vision@${MP_VERSION}?module`
   ];
   for (const u of tries) {
     try { mod = await import(u); setStatus(`Importado desde ${new URL(u).host}`,"ok"); break; }
@@ -101,9 +107,9 @@ async function initModels(){
     runningMode:"VIDEO", numHands:2,
     minHandDetectionConfidence:.5, minHandPresenceConfidence:.5, minTrackingConfidence:.5
   });
-  // En GitHub Pages algunos navegadores/entornos aplican políticas que dificultan GPU → usar CPU por robustez
+  // CPU por robustez en Pages
   poseLandmarker = await PoseLandmarker.createFromOptions(vision,{
-    baseOptions:{ modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task" /*, delegate:"GPU"*/ },
+    baseOptions:{ modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task" },
     runningMode:"VIDEO", numPoses:1,
     minPoseDetectionConfidence:.5, minPosePresenceConfidence:.5, minTrackingConfidence:.5
   });
@@ -247,23 +253,27 @@ function updateCharts(){
 async function loop(){
   if(!running) return;
   updateFps(); ctx.clearRect(0,0,canvas.width,canvas.height);
+  const now = performance.now();
 
-  // Manos: calibración
+  // --------- Manos: calibración y detección de “5 dedos” ---------
+  let fiveDetectedThisFrame = false;
   if(handLandmarker){
     try{
-      const rh=handLandmarker.detectForVideo(video,performance.now());
+      const rh=handLandmarker.detectForVideo(video,now);
       if(rh){
         const L=rh.landmarks||rh.handLandmarks||[], H=rh.handedness||rh.handednesses||[];
         for(let i=0;i<L.length;i++){
           drawHand(L[i]);
           const handed = (H[i]&&H[i][0]&&H[i][0].categoryName)?H[i][0].categoryName:"Unknown";
           const f = countFingersForHand(L[i], handed);
+
+          // Calibración px/cm con la misma condición (mano con 5 dedos)
           if(f===5){
+            fiveDetectedThisFrame = true;
             const span = handSpanPx(L[i]);
             if(span>CAL_SPAN_MIN_PX){
               scalePxPerCm = span / CAL_HAND_CM;
               kPxcm.textContent = scalePxPerCm.toFixed(2);
-              setStatus("Calibrado (mano 5 dedos)","ok");
             }
           }
         }
@@ -271,11 +281,18 @@ async function loop(){
     }catch(_){}
   }
 
-  // Pose → altura/peso (si calibrado)
+  // Actualiza puerta de muestreo por levantada
+  if(fiveDetectedThisFrame){
+    if(!fiveUp){ fiveUp=true; fiveUpSince=now; sampledThisHold=false; }
+  }else{
+    fiveUp=false; fiveUpSince=0; sampledThisHold=false;
+  }
+
+  // --------- Pose → altura/peso (si calibrado) ---------
   let heightCm=null, widthCm=null, weightKg=null, bmi=null;
   if(poseLandmarker){
     try{
-      const rp=poseLandmarker.detectForVideo(video,performance.now());
+      const rp=poseLandmarker.detectForVideo(video,now);
       if(rp?.landmarks?.length){
         const lmk = rp.landmarks[0];
         drawPoseSkeleton(lmk);
@@ -292,20 +309,22 @@ async function loop(){
     }catch(_){}
   }
 
-  // Muestreo
-  const t=performance.now();
-  if(t>=nextSampleAt){
-    if(scalePxPerCm && heightCm && weightKg){
-      const rec = { t:new Date().toISOString(), h:heightCm, w:weightKg, bmi:bmi, pxcm:scalePxPerCm };
-      samples.push(rec);
-      if(samples.length>MAX_HISTORY) samples.splice(0, samples.length - MAX_HISTORY);
-      kNSamples.textContent=String(samples.length);
-      kHLast.textContent = heightCm.toFixed(1);
-      kWLast.textContent = weightKg.toFixed(1);
-      kBmiLast.textContent = bmi.toFixed(1);
-      updateCharts();
-    }
-    nextSampleAt += SAMPLE_INTERVAL_MS;
+  // --------- Muestreo: sólo si hay 5 dedos y estabilidad temporal ---------
+  const stableFive = fiveUp && (now - fiveUpSince >= HOLD_MIN_MS);
+  const cooldownOk = (now - lastSampleAt >= SAMPLE_GAP_MS);
+  const eligible = scalePxPerCm && heightCm && weightKg && stableFive && !sampledThisHold && cooldownOk;
+
+  if(eligible){
+    const rec = { t:new Date().toISOString(), h:heightCm, w:weightKg, bmi:bmi, pxcm:scalePxPerCm };
+    samples.push(rec);
+    if(samples.length>MAX_HISTORY) samples.splice(0, samples.length - MAX_HISTORY);
+    kNSamples.textContent=String(samples.length);
+    kHLast.textContent = heightCm.toFixed(1);
+    kWLast.textContent = weightKg.toFixed(1);
+    kBmiLast.textContent = bmi.toFixed(1);
+    updateCharts();
+    sampledThisHold = true;
+    lastSampleAt = now;
   }
 
   requestAnimationFrame(loop);
@@ -331,17 +350,18 @@ btnStart.addEventListener("click", async ()=>{
     await startCamera();
     await importTasksVision();
     await initModels();
-    running=true; loop();
+    running=true; requestAnimationFrame(loop);
     btnStart.innerHTML='<i class="fas fa-circle-stop"></i> Detener';
     btnStart.disabled=false;
-    // Cambiar a modo Detener
+
     const stopHandler = ()=>{
       running=false; stopCamera();
       btnStart.removeEventListener("click", stopHandler);
       btnStart.innerHTML='<i class="fas fa-video"></i> Iniciar';
       setStatus("Detenido","warn");
+      // Reset de la puerta por si quedaba activa
+      fiveUp=false; fiveUpSince=0; sampledThisHold=false;
     };
-    // Sustituye el listener de iniciar por el de detener temporalmente
     btnStart.addEventListener("click", stopHandler, { once:true });
   }catch(e){
     setStatus(`Error: ${e?.message||e}`,"err");
@@ -356,11 +376,12 @@ btnReset.addEventListener("click", ()=>{
   hwChart.data.datasets[0].data=[]; hwChart.data.datasets[1].data=[]; hwChart.update();
   hHist.data.datasets[0].data=Array(hBins.length).fill(0); hHist.update();
   wHist.data.datasets[0].data=Array(wBins.length).fill(0); wHist.update();
-  nextSampleAt = performance.now() + SAMPLE_INTERVAL_MS;
+  // Reset de control de mano
+  fiveUp=false; fiveUpSince=0; sampledThisHold=false;
   setStatus("Datos reiniciados","warn");
 });
 
 btnCsv.addEventListener("click", downloadCsv);
 
-// Parar cámara si se oculta la pestaña (buena práctica en móviles)
+// Parar cámara si se oculta la pestaña
 document.addEventListener("visibilitychange", ()=>{ if(document.hidden){ running=false; stopCamera(); }});
