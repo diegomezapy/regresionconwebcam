@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SeCien 2025 - Laboratorio de Emociones</title>
+  <title>SeCien 2025 — Regresión Estatura–Peso</title>
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,11 +22,11 @@
     .logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}
     .logo-icon{font-size:2.6rem;color:var(--accent);animation:bounce 2s infinite}
     h1{font-family:'Comic Neue',cursive;font-size:2.25rem;color:var(--accent);text-shadow:0 0 10px rgba(249,168,38,.5)}
-    .subtitle{font-size:1rem;color:var(--text-light);max-width:800px;margin:6px auto 0;line-height:1.55;padding:0 8px}
+    .subtitle{font-size:1rem;color:var(--text-light);max-width:900px;margin:6px auto 0;line-height:1.55;padding:0 8px}
 
-    /* === LAYOUT PRINCIPAL === */
+    /* === LAYOUT === */
     .main-content{
-      display:grid;grid-template-columns:minmax(460px,3fr) minmax(360px,2fr);gap:22px;margin-top:14px
+      display:grid;grid-template-columns:minmax(480px,3fr) minmax(380px,2fr);gap:22px;margin-top:14px
     }
     @media (max-width:1024px){.main-content{grid-template-columns:1fr}}
     .camera-section{
@@ -40,559 +40,441 @@
     .camera-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
     video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     .controls{
-      display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:rgba(30,41,59,.88)
+      display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;background:rgba(30,41,59,.88)
     }
     .btn{
-      padding:12px 20px;border:none;border-radius:999px;background:var(--primary);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
+      padding:12px 18px;border:none;border-radius:999px;background:var(--primary);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
       display:flex;align-items:center;gap:10px;transition:transform .25s ease, box-shadow .25s ease;box-shadow:0 4px 10px rgba(78,161,255,.30)
     }
     .btn:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(78,161,255,.45)}
     .btn:disabled{opacity:.65;cursor:not-allowed;transform:none;box-shadow:none}
-    .status{padding:8px 12px;background:rgba(30,41,59,.6);border-radius:999px;font-size:.9rem;white-space:nowrap}
+    .btn.alt{background:#22c55e}
+    .btn.warn{background:#f59e0b}
+    .status{
+      padding:8px 12px;background:rgba(30,41,59,.6);border-radius:999px;font-size:.9rem;white-space:nowrap
+    }
     .status.ok{color:var(--success)} .status.warn{color:var(--accent)} .status.err{color:var(--secondary)}
 
-    .character{position:absolute;bottom:14px;right:14px;width:96px;z-index:2;animation:float 6s ease-in-out infinite}
-
-    /* === PANEL DERECHO (STICKY) === */
     .info-panel{
       position:sticky;top:16px;align-self:start;background:var(--bg-panel);border-radius:18px;padding:18px 18px 16px;
       box-shadow:0 10px 30px rgba(0,0,0,.30);display:flex;flex-direction:column;gap:16px
     }
     .panel-title{font-size:1.4rem;color:var(--accent);text-align:center;margin-top:2px;font-family:'Comic Neue',cursive}
-
-    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     @media (max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-    .stat-card{background:rgba(30,41,59,.6);border-radius:12px;padding:14px;text-align:center}
+    .stat-card{background:rgba(30,41,59,.6);border-radius:12px;padding:12px;text-align:center}
     .stat-title{font-size:.95rem;color:var(--text-light);margin-bottom:6px}
-    .stat-value{font-size:1.9rem;font-weight:800;color:var(--primary);font-family:'Comic Neue',cursive}
+    .stat-value{font-size:1.7rem;font-weight:800;color:var(--primary);font-family:'Comic Neue',cursive}
+    .small{font-size:.9rem;color:var(--text-light)}
 
-    .emotion-display{background:rgba(30,41,59,.6);border-radius:12px;padding:14px;text-align:center}
-    .emotion-title{font-size:1rem;color:var(--text-light);margin-bottom:8px}
-    .emotion-value{font-size:1.7rem;font-weight:800;color:var(--accent);font-family:'Comic Neue',cursive;min-height:42px;display:flex;align-items:center;justify-content:center}
-
-    .charts-section{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media (max-width:1100px){.charts-section{grid-template-columns:1fr}}
-    .chart-card{background:rgba(30,41,59,.6);border-radius:12px;padding:12px 12px 8px;height:260px;display:flex;flex-direction:column}
+    .charts-section{display:grid;grid-template-columns:1fr;gap:14px}
+    .chart-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
+    @media (max-width:1100px){.chart-row{grid-template-columns:1fr}}
+    .chart-card{background:rgba(30,41,59,.6);border-radius:12px;padding:12px 12px 8px;height:280px;display:flex;flex-direction:column}
     .chart-title{text-align:center;font-size:1.05rem;color:var(--accent);margin-bottom:6px}
     .chart-wrap{position:relative;flex:1 1 auto}
-
-    .stats-container{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media (max-width:1100px){.stats-container{grid-template-columns:1fr}}
-    .stats-card{background:rgba(30,41,59,.6);border-radius:12px;padding:12px}
-    .stats-title{text-align:center;color:var(--accent);font-size:1.05rem;margin-bottom:8px}
-    .stats-content{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    @media (max-width:1100px){.stats-content{grid-template-columns:repeat(2,1fr)}}
-    .stats-item{background:rgba(78,161,255,.15);border-radius:10px;padding:10px;text-align:center}
-    .stats-label{font-size:.9rem;color:var(--text-light);margin-bottom:4px}
-    .stats-value{font-size:1.25rem;font-weight:800;color:var(--primary)}
 
     footer{text-align:center;padding:18px;color:var(--text-light);font-size:.9rem;margin-top:20px}
 
     @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="logo"><i class="fas fa-chart-pie logo-icon"></i><h1>SeCien 2025 - Laboratorio de Emociones</h1></div>
-      <p class="subtitle">Descubre las estadísticas a través de tus emociones, gestos y movimientos. Analiza estadísticas con gráficos interactivos.</p>
+      <div class="logo"><i class="fas fa-ruler-combined logo-icon"></i><h1>SeCien 2025 — Regresión Estatura–Peso</h1></div>
+      <p class="subtitle">
+        Estimación automática de <b>estatura (cm)</b> y <b>peso (kg)</b> frente a cámara (≈2&nbsp;m).
+        Calibra mostrando una mano con <b>5 dedos</b> (índice–meñique ≈ <b>15&nbsp;cm</b>). Se muestrea cada <b>1,5&nbsp;s</b> y se conserva un histórico de hasta <b>1.000</b> registros.
+      </p>
     </header>
 
     <div class="main-content">
       <!-- === CÁMARA === -->
       <section class="camera-section">
         <div class="camera-header">
-          <div class="camera-title">Tu Laboratorio</div>
-          <div class="status">Listo para experimentar</div>
+          <div class="camera-title">Adquisición y Calibración</div>
+          <div class="status">Listo para iniciar</div>
         </div>
 
         <div class="camera-stage">
           <div class="camera-inner">
             <video id="video" playsinline autoplay muted></video>
             <canvas id="overlay"></canvas>
-            <img class="character" alt="Robot científico"
-              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 24 24'%3E%3Cpath fill='%23f9a826' d='M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M7.07,18.28C7.5,17.38 10.12,16.5 12,16.5C13.88,16.5 16.5,17.38 16.93,18.28C15.57,19.36 13.86,20 12,20C10.14,20 8.43,19.36 7.07,18.28M18.36,16.83C16.93,15.09 13.46,14.5 12,14.5C10.54,14.5 7.07,15.09 5.64,16.83C4.62,15.5 4,13.82 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,13.82 19.38,15.5 18.36,16.83M12,6C10.06,6 8.5,7.56 8.5,9.5C8.5,11.44 10.06,13 12,13C13.94,13 15.5,11.44 15.5,9.5C15.5,7.56 13.94,6 12,6M12,11A1.5,1.5 0 0,1 10.5,9.5A1.5,1.5 0 0,1 12,8A1.5,1.5 0 0,1 13.5,9.5A1.5,1.5 0 0,1 12,11Z'/%3E%3C/svg%3E">
           </div>
         </div>
 
         <div class="controls">
-          <button id="btnStart" class="btn"><i class="fas fa-camera"></i> Iniciar Laboratorio</button>
-          <div class="status ok" id="statusInline" style="display:none"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button id="btnStart" class="btn"><i class="fas fa-video"></i> Iniciar</button>
+            <button id="btnReset" class="btn warn"><i class="fas fa-broom"></i> Reiniciar datos</button>
+            <button id="btnCsv" class="btn alt"><i class="fas fa-file-csv"></i> Descargar CSV</button>
+          </div>
+          <div class="status small" id="hint">Sugerencia: colócate de pie, encuadre completo, a ~2 m. Levanta 5 dedos para calibrar.</div>
         </div>
       </section>
 
-      <!-- === PANEL DE DATOS === -->
+      <!-- === PANEL DE ANÁLISIS === -->
       <aside class="info-panel">
-        <h2 class="panel-title">Tus Datos Científicos</h2>
+        <h2 class="panel-title">Indicadores en tiempo real</h2>
 
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-title">FPS (Experimentos/seg)</div><div id="fps" class="stat-value">–</div></div>
-          <div class="stat-card"><div class="stat-title">Caras Detectadas</div><div id="nfaces" class="stat-value">0</div></div>
-          <div class="stat-card"><div class="stat-title">Manos Detectadas</div><div id="nhands" class="stat-value">0</div></div>
-          <div class="stat-card"><div class="stat-title">Dedos Detectados</div><div id="fingers" class="stat-value">0</div></div>
-        </div>
-
-        <div class="emotion-display">
-          <div class="emotion-title">Tu Emoción Matemática</div>
-          <div id="expr" class="emotion-value">–</div>
+          <div class="stat-card"><div class="stat-title">Muestras</div><div id="nSamples" class="stat-value">0</div></div>
+          <div class="stat-card"><div class="stat-title">Estatura última (cm)</div><div id="hLast" class="stat-value">–</div></div>
+          <div class="stat-card"><div class="stat-title">Peso último (kg)</div><div id="wLast" class="stat-value">–</div></div>
+          <div class="stat-card"><div class="stat-title">IMC último</div><div id="bmiLast" class="stat-value">–</div></div>
+          <div class="stat-card"><div class="stat-title">px/cm (calibración)</div><div id="pxcm" class="stat-value">–</div></div>
+          <div class="stat-card"><div class="stat-title">FPS</div><div id="fps" class="stat-value">–</div></div>
         </div>
 
         <div class="charts-section">
-          <div class="chart-card">
-            <div class="chart-title">Distribución de Emociones</div>
-            <div class="chart-wrap"><canvas id="emotionChart"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title">Conteo de Dedos</div>
-            <div class="chart-wrap"><canvas id="fingerChart"></canvas></div>
+          <div class="chart-row">
+            <div class="chart-card">
+              <div class="chart-title">Estatura vs Peso · Regresión lineal (R²=<span id="r2val">–</span>)</div>
+              <div class="chart-wrap"><canvas id="hwChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Distribución Estatura (cm)</div>
+              <div class="chart-wrap"><canvas id="hHist"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Distribución Peso (kg)</div>
+              <div class="chart-wrap"><canvas id="wHist"></canvas></div>
+            </div>
           </div>
         </div>
 
-        <div class="stats-container">
-          <div class="stats-card">
-            <div class="stats-title">Estadísticas de Emociones</div>
-            <div class="stats-content">
-              <div class="stats-item"><div class="stats-label">Más frecuente</div><div id="mostFrequent" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Menos frecuente</div><div id="leastFrequent" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Duración promedio</div><div id="avgDuration" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Último cambio</div><div id="lastChange" class="stats-value">-</div></div>
-            </div>
-          </div>
-          <div class="stats-card">
-            <div class="stats-title">Estadísticas de Dedos</div>
-            <div class="stats-content">
-              <div class="stats-item"><div class="stats-label">Promedio</div><div id="fingerAvg" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Máximo</div><div id="fingerMax" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Mínimo</div><div id="fingerMin" class="stats-value">-</div></div>
-              <div class="stats-item"><div class="stats-label">Total</div><div id="fingerTotal" class="stats-value">-</div></div>
-            </div>
-          </div>
-        </div>
+        <p class="small">
+          Nota: estimaciones aproximadas; la fórmula de peso se basa en medidas 2D (ancho medio hombros/cadera) y puede diferir del peso real.
+        </p>
       </aside>
     </div>
 
-    <footer>Laboratorio de Emociones Matemáticas © 2025 - FACEN UNA </footer>
+    <footer>SeCien 2025 — FACEN UNA · Módulo de Regresión Estatura–Peso</footer>
   </div>
 
-<script type="module">
-  const $ = (id)=>document.getElementById(id);
-  const video=$("video"), canvas=$("overlay"), ctx=canvas.getContext("2d",{alpha:true});
-  const btn=$("btnStart");
-  const mFps=$("fps"), mFaces=$("nfaces"), mHands=$("nhands"), mFingers=$("fingers"), mExpr=$("expr");
-  const statusEl=document.querySelector(".camera-header .status");
+  <script type="module">
+    const $ = (id)=>document.getElementById(id);
+    const video = $("video");
+    const canvas = $("overlay");
+    const ctx = canvas.getContext("2d",{alpha:true});
+    const btnStart = $("btnStart"), btnReset=$("btnReset"), btnCsv=$("btnCsv");
+    const statusEl = document.querySelector(".camera-header .status");
+    const hintEl   = $("hint");
 
-  /* ======== Estadísticas y gráficos (actividad original) ======== */
-  const mostFrequent=$("mostFrequent"), leastFrequent=$("leastFrequent"),
-        avgDuration=$("avgDuration"), lastChange=$("lastChange"),
-        fingerAvg=$("fingerAvg"), fingerMax=$("fingerMax"),
-        fingerMin=$("fingerMin"), fingerTotal=$("fingerTotal");
+    // KPIs
+    const kNSamples=$("nSamples"), kHLast=$("hLast"), kWLast=$("wLast"), kBmiLast=$("bmiLast"), kPxcm=$("pxcm"), kFps=$("fps");
 
-  const emotionHistory=[], fingerHistory=[], emotionDuration={};
-  let lastEmotionChange=0, currentEmotionStart=Date.now();
-  const emotionTypes=['😃 Feliz','😮 Sorprendido','😢 Triste','😠 Enojado','😐 Neutro'];
-  emotionTypes.forEach(t=>emotionDuration[t]=0);
+    // ===== Parámetros =====
+    const SAMPLE_INTERVAL_MS = 1500; // 1.5 s
+    const MAX_HISTORY = 1000;
+    const CAL_HAND_CM = 15.0;      // índice–meñique ~15 cm
+    const CAL_SPAN_MIN_PX = 30;    // mínimo aceptable
+    const HEIGHT_RANGE=[120,200];  // cm plausibles
+    const WEIGHT_RANGE=[25,150];   // kg plausibles
 
-  const emotionChart=new Chart($("emotionChart"),{
-    type:'pie',
-    data:{labels:['Feliz','Sorprendido','Triste','Enojado','Neutro'],
-      datasets:[{data:[0,0,0,0,0],backgroundColor:['#4ea1ff','#f9a826','#2ecc71','#ff6b6b','#cbd5e1'],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#f8fafc',font:{size:12}}}}}
-  });
-  const fingerChart=new Chart($("fingerChart"),{
-    type:'bar',
-    data:{labels:['0','1','2','3','4','5','6+'],datasets:[{label:'Conteo',data:[0,0,0,0,0,0,0],backgroundColor:'#4ea1ff',borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{color:'#f8fafc'},grid:{color:'rgba(255,255,255,.1)'}},x:{ticks:{color:'#f8fafc'},grid:{display:false}}},plugins:{legend:{display:false}}}
-  });
+    let FilesetResolver=null, HandLandmarker=null, PoseLandmarker=null;
+    let handLandmarker=null, poseLandmarker=null;
 
-  function setStatus(msg, cls=""){ statusEl.textContent=msg; statusEl.className=`status ${cls}`; }
+    // Estado
+    let running=false, frameCount=0, lastTime=performance.now(), fps=0;
+    let scalePxPerCm = null;
+    let heightCalib=1.0, weightCalib=1.0;
+    let nextSampleAt = performance.now() + SAMPLE_INTERVAL_MS;
 
-  /* ======== Estado y librerías ======== */
-  let running=false, frameCount=0, lastTime=performance.now(), fps=0;
-  let FilesetResolver=null, FaceLandmarker=null, HandLandmarker=null, PoseLandmarker=null;
-  let faceLandmarker=null, handLandmarker=null, poseLandmarker=null;
-
-  // --- Parámetros de muestreo/retención ---
-  const SAMPLE_INTERVAL_MS = 1500; // 1.5 s entre muestras
-  const MAX_HISTORY = 1000;        // conservar último millar
-  let nextSampleAt = performance.now() + SAMPLE_INTERVAL_MS;
-
-  function updateFps(){
-    frameCount++; const now=performance.now();
-    if(now-lastTime>=1000){ fps=frameCount; frameCount=0; lastTime=now; mFps.textContent=String(fps); }
-  }
-  function clamp(x){ return Math.max(0,Math.min(1,x)); }
-
-  async function importTasksVision(){
-    setStatus("Importando @mediapipe/tasks-vision…","warn");
-    const v="0.10.7";
-    const urls=[`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${v}`,`https://unpkg.com/@mediapipe/tasks-vision@${v}`];
-    let mod=null,lastErr=null;
-    for(const u of urls){ try{ mod=await import(u); setStatus(`Importado desde ${new URL(u).host}.`,"ok"); break; }catch(e){ lastErr=e; } }
-    if(!mod){ setStatus("No se pudo importar tasks-vision.","err"); throw lastErr||new Error("ImportFailed"); }
-    ({FilesetResolver,FaceLandmarker,HandLandmarker,PoseLandmarker}=mod);
-  }
-
-  async function startCamera(){
-    setStatus("Solicitando cámara…","warn");
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video:{width:{ideal:1280},height:{ideal:720},facingMode:{ideal:"user"}}, audio:false
-    });
-    video.srcObject=stream;
-    await video.play();
-    resizeCanvas(); setStatus("Cámara iniciada.","ok");
-  }
-
-  function resizeCanvas(){
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(640, Math.round(rect.width));
-    canvas.height= Math.max(360, Math.round(rect.height));
-  }
-  new ResizeObserver(resizeCanvas).observe(document.querySelector(".camera-stage"));
-
-  async function initModels(){
-    setStatus("Cargando modelos y WASM…","warn");
-    const v="0.10.7";
-    const vision=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${v}/wasm`);
-    faceLandmarker = await FaceLandmarker.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},
-      runningMode:"VIDEO",outputFaceBlendshapes:true,numFaces:1,minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minTrackingConfidence:.5
-    });
-    handLandmarker = await HandLandmarker.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"},
-      runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.5,minHandPresenceConfidence:.5,minTrackingConfidence:.5
-    });
-    poseLandmarker = await PoseLandmarker.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},
-      runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5
-    });
-    setStatus("Modelos listos.","ok");
-  }
-
-  /* ======== Dibujo ======== */
-  function drawFace(points,size=1.6){
-    ctx.fillStyle="#4ea1ff";
-    for(const p of points){ ctx.beginPath(); ctx.arc(p.x*canvas.width,p.y*canvas.height,size,0,Math.PI*2); ctx.fill(); }
-  }
-  function drawHand(points){
-    ctx.fillStyle="#2ecc71";
-    for(const p of points){ ctx.beginPath(); ctx.arc(p.x*canvas.width,p.y*canvas.height,3,0,Math.PI*2); ctx.fill(); }
-  }
-  const POSE_CONNECTIONS=[[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[27,29],[29,31],[24,26],[26,28],[28,30],[30,32]];
-  function drawPoseSkeleton(landmarks){
-    ctx.lineWidth=3; ctx.strokeStyle="#9ad1ff"; ctx.beginPath();
-    for(const [a,b] of POSE_CONNECTIONS){ const p=landmarks[a], q=landmarks[b]; if(!p||!q) continue; ctx.moveTo(p.x*canvas.width,p.y*canvas.height); ctx.lineTo(q.x*canvas.width,q.y*canvas.height); }
-    ctx.stroke();
-  }
-
-  /* ======== Emociones (EMA + histeresis) ======== */
-  const EMA=new Map(), ALPHA=0.35; let lastEmotion="😐 Neutro", lastEmotionFrames=0;
-  function bs(blend,name){
-    if(!blend||!blend.categories) return 0;
-    const cat=blend.categories.find(c=>c.categoryName===name);
-    const raw=cat?cat.score:0, prev=EMA.has(name)?EMA.get(name):raw;
-    const sm=ALPHA*raw+(1-ALPHA)*prev; EMA.set(name,sm); return sm;
-  }
-  function estimateExpression(blend){
-    if(!blend) return "–";
-    const smile=(bs(blend,"mouthSmileLeft")+bs(blend,"mouthSmileRight"))/2;
-    const jawOpen=bs(blend,"jawOpen"), browUp=bs(blend,"browInnerUp");
-    const browDown=(bs(blend,"browDownLeft")+bs(blend,"browDownRight"))/2;
-    const mouthFrown=(bs(blend,"mouthFrownLeft")+bs(blend,"mouthFrownRight"))/2;
-    const mouthPress=(bs(blend,"mouthPressLeft")+bs(blend,"mouthPressRight"))/2;
-    const lipDep=(bs(blend,"mouthCornerPullDownLeft")+bs(blend,"mouthCornerPullDownRight"))/2 || (bs(blend,"mouthLowerDownLeft")+bs(blend,"mouthLowerDownRight"))/2;
-    const eyeSquint=(bs(blend,"eyeSquintLeft")+bs(blend,"eyeSquintRight"))/2;
-    const noseSneer=(bs(blend,"noseSneerLeft")+bs(blend,"noseSneerRight"))/2;
-
-    const scoreHappy=clamp(.9*smile-.3*mouthFrown-.2*mouthPress-.2*browDown+.1*browUp);
-    const scoreSurprised=clamp(.7*jawOpen+.3*browUp-.2*mouthPress);
-    const scoreSad=clamp(.7*lipDep+.6*mouthFrown+.3*browUp-.1*jawOpen);
-    const scoreAngry=clamp(.7*browDown+.5*mouthPress+.4*noseSneer+.3*eyeSquint-.1*jawOpen);
-    const scoreNeutral=.2;
-
-    const scores=[["😃 Feliz",scoreHappy],["😮 Sorprendido",scoreSurprised],["😢 Triste",scoreSad],["😠 Enojado",scoreAngry],["😐 Neutro",scoreNeutral]].sort((a,b)=>b[1]-a[1]);
-    const [cand,s]=scores[0]; const top2=scores[1][1];
-    const TH=.35, DH=.10;
-    let label=(s>=TH)?cand:"😐 Neutro";
-    if(label!==lastEmotion && (s-top2)<DH && lastEmotionFrames<8){ label=lastEmotion; lastEmotionFrames++; }
-    else { if(label===lastEmotion) lastEmotionFrames=Math.min(30,lastEmotionFrames+1); }
-    return label;
-  }
-
-  /* ======== Dedos ======== */
-  function countFingersForHand(landmarks,handed="Unknown"){
-    if(!landmarks||landmarks.length!==21) return 0;
-    const TIP={thumb:4,index:8,middle:12,ring:16,pinky:20};
-    const PIP={index:6,middle:10,ring:14,pinky:18};
-    const MCP={thumb:2,index:5,middle:9,ring:13,pinky:17};
-    let count=0;
-    for(const f of ['index','middle','ring','pinky']){
-      const tip=landmarks[TIP[f]], pip=landmarks[PIP[f]], mcp=landmarks[MCP[f]];
-      if(tip.y<pip.y && tip.y<mcp.y) count++;
+    // Datos
+    const samples = []; // {t,h,w,bmi,pxcm}
+    // ===== Utilidades =====
+    function setStatus(msg, cls=""){ statusEl.textContent=msg; statusEl.className=`status ${cls}`; }
+    function clamp(x,a=0,b=1){ return Math.max(a,Math.min(b,x)); }
+    function clip(v,[a,b]){ return Math.max(a, Math.min(b, v)); }
+    function updateFps(){
+      frameCount++; const now=performance.now();
+      if(now-lastTime>=1000){ fps=frameCount; frameCount=0; lastTime=now; kFps.textContent=String(fps); }
     }
-    const tt=landmarks[TIP.thumb], tip=landmarks[3], mp=landmarks[MCP.thumb];
-    if(handed==="Right"){ if(tt.x>tip.x && tt.x>mp.x) count++; }
-    else if(handed==="Left"){ if(tt.x<tip.x && tt.x<mp.x) count++; }
-    else { if(Math.abs(tt.x-tip.x)>0.05) count++; }
-    return count;
-  }
 
-  /* ======== NUEVA ACTIVIDAD: Estatura & Peso ======== */
-  // Calibración y parámetros
-  let scalePxPerCm = null;         // pixeles por cm (de la mano)
-  let lastCalibTime = 0;
-  const CAL_HAND_CM = 15.0;        // índice–meñique
-  const CAL_SPAN_MIN_PX = 30;      // para evitar ruido
-  const HEIGHT_RANGE = [120, 200]; // cm plausibles
-  const WEIGHT_RANGE = [25, 150];  // kg plausibles
+    // ===== Cámara / Layout =====
+    async function startCamera(){
+      setStatus("Solicitando cámara…","warn");
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{width:{ideal:1280},height:{ideal:720},facingMode:{ideal:"user"}}, audio:false });
+      video.srcObject=stream; await video.play();
+      resizeCanvas(); setStatus("Cámara iniciada","ok");
+    }
+    function resizeCanvas(){
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(640, Math.round(rect.width));
+      canvas.height= Math.max(360, Math.round(rect.height));
+    }
+    new ResizeObserver(resizeCanvas).observe(document.querySelector(".camera-stage"));
 
-  // Ajustes de usuario (si deseas afinarlos)
-  let heightCalib = 1.0;  // multiplicador fino de estatura
-  let weightCalib = 1.0;  // multiplicador fino de peso
+    // ===== Carga MediaPipe =====
+    async function importTasksVision(){
+      setStatus("Importando @mediapipe/tasks-vision…","warn");
+      const v="0.10.7";
+      const urls=[`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${v}`,`https://unpkg.com/@mediapipe/tasks-vision@${v}`];
+      let mod=null,lastErr=null;
+      for(const u of urls){ try{ mod=await import(u); setStatus(`Importado desde ${new URL(u).host}`,"ok"); break; }catch(e){ lastErr=e; } }
+      if(!mod){ setStatus("No se pudo importar tasks-vision.","err"); throw lastErr||new Error("ImportFailed"); }
+      ({ FilesetResolver, HandLandmarker, PoseLandmarker } = mod);
+    }
+    async function initModels(){
+      setStatus("Cargando modelos y WASM…","warn");
+      const v="0.10.7";
+      const vision=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${v}/wasm`);
+      handLandmarker = await HandLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"},
+        runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.5,minHandPresenceConfidence:.5,minTrackingConfidence:.5
+      });
+      poseLandmarker = await PoseLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},
+        runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5
+      });
+      setStatus("Modelos listos","ok");
+    }
 
-  // Series y gráfico de correlación
-  const hwSamples = []; // {h,w,bmi}
-  // Crear contenedor y canvas para el scatter sin tocar el HTML original
-  (function injectHWChart(){
-    const host = document.querySelector('.charts-section');
-    const card = document.createElement('div');
-    card.className = 'chart-card';
-    card.innerHTML = `<div class="chart-title">Estatura vs Peso (R²=<span id="r2val">–</span>)</div>
-                      <div class="chart-wrap"><canvas id="hwChart"></canvas></div>`;
-    host.appendChild(card);
-  })();
-  const r2Span = document.getElementById('r2val');
-  const hwChart = new Chart($("#hwChart"), {
-    type: 'scatter',
-    data: {
-      datasets: [
-        {label:'Muestras', data: [], pointRadius:4, backgroundColor:'#f9a826'},
-        {label:'Regresión', data: [], type:'line', borderWidth:2, borderColor:'#ff6b6b', pointRadius:0, fill:false}
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      scales:{
-        x:{title:{display:true,text:'Estatura (cm)',color:'#f8fafc'}, ticks:{color:'#f8fafc'}, grid:{color:'rgba(255,255,255,.1)'}},
-        y:{title:{display:true,text:'Peso (kg)',color:'#f8fafc'}, ticks:{color:'#f8fafc'}, grid:{color:'rgba(255,255,255,.1)'}}
+    // ===== Dibujo =====
+    const POSE_CONNECTIONS=[[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[27,29],[29,31],[24,26],[26,28],[28,30],[30,32]];
+    function drawHand(points){
+      ctx.fillStyle="#2ecc71";
+      for(const p of points){ ctx.beginPath(); ctx.arc(p.x*canvas.width,p.y*canvas.height,3,0,Math.PI*2); ctx.fill(); }
+    }
+    function drawPoseSkeleton(landmarks){
+      ctx.lineWidth=3; ctx.strokeStyle="#9ad1ff"; ctx.beginPath();
+      for(const [a,b] of POSE_CONNECTIONS){ const p=landmarks[a], q=landmarks[b]; if(!p||!q) continue; ctx.moveTo(p.x*canvas.width,p.y*canvas.height); ctx.lineTo(q.x*canvas.width,q.y*canvas.height); }
+      ctx.stroke();
+    }
+
+    // ===== Medición / Calibración =====
+    function countFingersForHand(landmarks,handed="Unknown"){
+      if(!landmarks||landmarks.length!==21) return 0;
+      const TIP={thumb:4,index:8,middle:12,ring:16,pinky:20};
+      const PIP={index:6,middle:10,ring:14,pinky:18};
+      const MCP={thumb:2,index:5,middle:9,ring:13,pinky:17};
+      let count=0;
+      for(const f of ['index','middle','ring','pinky']){
+        const tip=landmarks[TIP[f]], pip=landmarks[PIP[f]], mcp=landmarks[MCP[f]];
+        if(tip.y<pip.y && tip.y<mcp.y) count++;
+      }
+      const tt=landmarks[TIP.thumb], tip=landmarks[3], mp=landmarks[MCP.thumb];
+      if(handed==="Right"){ if(tt.x>tip.x && tt.x>mp.x) count++; }
+      else if(handed==="Left"){ if(tt.x<tip.x && tt.x<mp.x) count++; }
+      else { if(Math.abs(tt.x-tip.x)>0.05) count++; }
+      return count;
+    }
+    function handSpanPx(lmk){
+      const i = lmk[8], p = lmk[20];
+      const dx = (i.x - p.x) * canvas.width;
+      const dy = (i.y - p.y) * canvas.height;
+      return Math.hypot(dx, dy);
+    }
+    function calcHeightCm(poseLmk){
+      const headIdx=[0,1,2,3,4,5,6,7,8], footIdx=[27,28,29,30,31,32];
+      const ysHead = headIdx.map(i => poseLmk[i]?.y).filter(v => v!==undefined);
+      const ysFoot = footIdx.map(i => poseLmk[i]?.y).filter(v => v!==undefined);
+      if(!ysHead.length || !ysFoot.length || !scalePxPerCm) return null;
+      const headY = Math.min(...ysHead), footY = Math.max(...ysFoot);
+      const px = (footY - headY) * canvas.height;
+      return (px / scalePxPerCm) * heightCalib;
+    }
+    function calcWidthCm(poseLmk){
+      const L11=poseLmk[11], R12=poseLmk[12], L23=poseLmk[23], R24=poseLmk[24];
+      if(!(L11&&R12&&L23&&R24) || !scalePxPerCm) return null;
+      const sh = Math.abs((L11.x - R12.x) * canvas.width);
+      const wa = Math.abs((L23.x - R24.x) * canvas.width);
+      return ((sh + wa) / 2) / scalePxPerCm;
+    }
+    function estimateWeightKg(heightCm, widthCm){
+      return (1.8 * widthCm + 0.25 * heightCm - 30) * weightCalib;
+    }
+
+    // ===== Gráficos =====
+    const r2Span = $("r2val");
+    const hwChart = new Chart($("hwChart"), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {label:'Muestras', data: [], pointRadius:4, backgroundColor:'#f9a826'},
+          {label:'Regresión', data: [], type:'line', borderWidth:2, borderColor:'#ff6b6b', pointRadius:0, fill:false}
+        ]
       },
-      plugins:{legend:{labels:{color:'#f8fafc'}}}
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        scales:{
+          x:{title:{display:true,text:'Estatura (cm)',color:'#f8fafc'}, ticks:{color:'#f8fafc'}, grid:{color:'rgba(255,255,255,.1)'}},
+          y:{title:{display:true,text:'Peso (kg)',color:'#f8fafc'}, ticks:{color:'#f8fafc'}, grid:{color:'rgba(255,255,255,.1)'}}
+        },
+        plugins:{legend:{labels:{color:'#f8fafc'}}}
+      }
+    });
+    const hBins = Array.from({length:8},(_,k)=>120+10*k); // [120..190], bins de 10
+    const wBins = Array.from({length:11},(_,k)=>25+10*k); // [25..135], bins de 10
+    const hHist = new Chart($("hHist"),{
+      type:'bar',
+      data:{labels:hBins.map(v=>`${v}–${v+10}`),datasets:[{label:'Frecuencia',data:Array(hBins.length).fill(0),backgroundColor:'#4ea1ff'}]},
+      options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#f8fafc'},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#f8fafc'},grid:{color:'rgba(255,255,255,.1)'}}},plugins:{legend:{display:false}}}
+    });
+    const wHist = new Chart($("wHist"),{
+      type:'bar',
+      data:{labels:wBins.map(v=>`${v}–${v+10}`),datasets:[{label:'Frecuencia',data:Array(wBins.length).fill(0),backgroundColor:'#22c55e'}]},
+      options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:'#f8fafc'},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#f8fafc'},grid:{color:'rgba(255,255,255,.1)'}}},plugins:{legend:{display:false}}}
+    });
+
+    function linearRegression(xs, ys){
+      const n = xs.length; if(n<2) return null;
+      const mean = arr => arr.reduce((s,v)=>s+v,0)/arr.length;
+      const mx = mean(xs), my = mean(ys);
+      let num=0, den=0, ssRes=0, ssTot=0;
+      for(let i=0;i<n;i++){ const dx=xs[i]-mx; num += dx*(ys[i]-my); den += dx*dx; }
+      const b1 = den===0 ? 0 : num/den;
+      const b0 = my - b1*mx;
+      for(let i=0;i<n;i++){ const yhat=b0+b1*xs[i]; ssRes += (ys[i]-yhat)**2; ssTot += (ys[i]-my)**2; }
+      const r2 = ssTot===0 ? 1 : 1 - ssRes/ssTot;
+      return {b0,b1,r2};
     }
-  });
+    function updateCharts(){
+      // Scatter + regresión
+      const pts = samples.map(s => ({x:s.h, y:s.w}));
+      hwChart.data.datasets[0].data = pts;
+      if(samples.length>=2){
+        const xs=samples.map(s=>s.h), ys=samples.map(s=>s.w);
+        const lr = linearRegression(xs,ys);
+        const xMin = Math.min(...xs), xMax = Math.max(...xs);
+        const y1 = lr.b0 + lr.b1 * xMin, y2 = lr.b0 + lr.b1 * xMax;
+        hwChart.data.datasets[1].data = [{x:xMin,y:y1},{x:xMax,y:y2}];
+        r2Span.textContent = lr.r2.toFixed(2);
+      }else{
+        hwChart.data.datasets[1].data = [];
+        r2Span.textContent = "–";
+      }
+      hwChart.update('none');
 
-  function handSpanPx(lmk){
-    // distancia entre tips 8 (índice) y 20 (meñique)
-    const i = lmk[8], p = lmk[20];
-    const dx = (i.x - p.x) * canvas.width;
-    const dy = (i.y - p.y) * canvas.height;
-    return Math.hypot(dx, dy);
-  }
-
-  function calcHeightCm(poseLmk){
-    // cabeza: 0..8; pies: 27..32
-    const headIdx=[0,1,2,3,4,5,6,7,8], footIdx=[27,28,29,30,31,32];
-    const ysHead = headIdx.map(i => poseLmk[i]?.y).filter(v => v!==undefined);
-    const ysFoot = footIdx.map(i => poseLmk[i]?.y).filter(v => v!==undefined);
-    if(!ysHead.length || !ysFoot.length || !scalePxPerCm) return null;
-    const headY = Math.min(...ysHead), footY = Math.max(...ysFoot);
-    const px = (footY - headY) * canvas.height;
-    return (px / scalePxPerCm) * heightCalib;
-  }
-
-  function calcWidthCm(poseLmk){
-    // hombros (11-12) y caderas (23-24)
-    const L11=poseLmk[11], R12=poseLmk[12], L23=poseLmk[23], R24=poseLmk[24];
-    if(!(L11&&R12&&L23&&R24) || !scalePxPerCm) return null;
-    const sh = Math.abs((L11.x - R12.x) * canvas.width);
-    const wa = Math.abs((L23.x - R24.x) * canvas.width);
-    return ((sh + wa) / 2) / scalePxPerCm;
-  }
-
-  function estimateWeightKg(heightCm, widthCm){
-    // Fórmula simple inspirada en la versión Python (ajustable)
-    // Peso ≈ 0.9×ancho_hombros + 0.9×ancho_cintura + 0.25×estatura − 30
-    // como usamos promedio de anchos → 1.8*width
-    let w = (1.8 * widthCm + 0.25 * heightCm - 30) * weightCalib;
-    return w;
-  }
-
-  function clip(v,[a,b]){ return Math.max(a, Math.min(b, v)); }
-
-  function linearRegression(xs, ys){
-    const n = xs.length; if(n<2) return null;
-    const mean = arr => arr.reduce((s,v)=>s+v,0)/arr.length;
-    const mx = mean(xs), my = mean(ys);
-    let num=0, den=0, ssRes=0, ssTot=0;
-    for(let i=0;i<n;i++){ const dx=xs[i]-mx; num += dx*(ys[i]-my); den += dx*dx; }
-    const b1 = den===0 ? 0 : num/den;
-    const b0 = my - b1*mx;
-    for(let i=0;i<n;i++){ const yhat=b0+b1*xs[i]; ssRes += (ys[i]-yhat)**2; ssTot += (ys[i]-my)**2; }
-    const r2 = ssTot===0 ? 1 : 1 - ssRes/ssTot;
-    return {b0,b1,r2};
-  }
-
-  function updateHWChart(){
-    const pts = hwSamples.map(s => ({x:s.h, y:s.w}));
-    hwChart.data.datasets[0].data = pts;
-
-    const xs = hwSamples.map(s=>s.h), ys = hwSamples.map(s=>s.w);
-    const lr = linearRegression(xs, ys);
-    if(lr){
-      const xMin = Math.min(...xs), xMax = Math.max(...xs);
-      const y1 = lr.b0 + lr.b1 * xMin, y2 = lr.b0 + lr.b1 * xMax;
-      hwChart.data.datasets[1].data = [{x:xMin,y:y1},{x:xMax,y:y2}];
-      r2Span.textContent = lr.r2.toFixed(2);
-    }
-    hwChart.update('none');
-  }
-
-  /* ======== Actualización de estadísticas (actividad original) ======== */
-  function updateStats(){
-    const emotionCounts=emotionTypes.map(t=>emotionHistory.filter(e=>e===t).length);
-    emotionChart.data.datasets[0].data=emotionCounts; emotionChart.update('none');
-
-    const fingerCounts=[0,0,0,0,0,0,0];
-    fingerHistory.forEach(c=>{ if(c<=5) fingerCounts[c]++; else fingerCounts[6]++; });
-    fingerChart.data.datasets[0].data=fingerCounts; fingerChart.update('none');
-
-    const freq={}; emotionTypes.forEach(t=>freq[t]=0); emotionHistory.forEach(e=>freq[e]++);
-    const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
-    mostFrequent.textContent=sorted[0]?.[0]||'-';
-    leastFrequent.textContent=sorted[sorted.length-1]?.[0]||'-';
-
-    const durations=Object.values(emotionDuration).filter(v=>v>0);
-    const avg = durations.length? (durations.reduce((a,b)=>a+b,0)/durations.length)/1000 : 0;
-    avgDuration.textContent = durations.length? `${avg.toFixed(1)}s` : '-';
-
-    if(lastEmotionChange){ const sAgo=Math.floor((Date.now()-lastEmotionChange)/1000); lastChange.textContent=`${sAgo}s atrás`; }
-    else lastChange.textContent='-';
-
-    if(fingerHistory.length){
-      const sum=fingerHistory.reduce((a,b)=>a+b,0), max=Math.max(...fingerHistory), min=Math.min(...fingerHistory);
-      fingerAvg.textContent=(sum/fingerHistory.length).toFixed(1); fingerMax.textContent=max; fingerMin.textContent=min; fingerTotal.textContent=sum;
-    }else{ fingerAvg.textContent=fingerMax.textContent=fingerMin.textContent=fingerTotal.textContent='-'; }
-  }
-
-  /* ======== Bucle principal ======== */
-  let lastEmotionLabel=lastEmotion;
-  async function loop(){
-    if(!running) return;
-    updateFps(); ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    let faces=0, hands=0, fingers=0, expr="–";
-
-    // Rostro
-    if(faceLandmarker){
-      try{
-        const rf=faceLandmarker.detectForVideo(video,performance.now());
-        if(rf?.faceLandmarks?.length){
-          faces=rf.faceLandmarks.length; drawFace(rf.faceLandmarks[0],1.6);
-          if(rf.faceBlendshapes?.length){ expr=estimateExpression(rf.faceBlendshapes[0]); }
-        }
-      }catch(_){}
+      // Histogramas
+      const hCounts = Array(hBins.length).fill(0);
+      const wCounts = Array(wBins.length).fill(0);
+      for(const s of samples){
+        const hi = Math.min(hBins.length-1, Math.max(0, Math.floor((s.h-120)/10)));
+        const wi = Math.min(wBins.length-1, Math.max(0, Math.floor((s.w-25 )/10)));
+        if(s.h>=120 && s.h<200) hCounts[hi]++;
+        if(s.w>=25  && s.w<135+10) wCounts[wi]++;
+      }
+      hHist.data.datasets[0].data = hCounts; hHist.update('none');
+      wHist.data.datasets[0].data = wCounts; wHist.update('none');
     }
 
-    // Manos (y calibración)
-    let handLmk = null, handed = "Unknown";
-    if(handLandmarker){
-      try{
-        const rh=handLandmarker.detectForVideo(video,performance.now());
-        if(rh){
-          const L=rh.landmarks||rh.handLandmarks||[], H=rh.handedness||rh.handednesses||[];
-          hands=L.length;
-          for(let i=0;i<L.length;i++){
-            drawHand(L[i]);
-            const label=(H[i]&&H[i][0]&&H[i][0].categoryName)?H[i][0].categoryName:"Unknown";
-            handed = label;
-            const f = countFingersForHand(L[i], label);
-            fingers += f;
-            // calibrar si la mano muestra 5 dedos
-            if(f===5){
-              const span = handSpanPx(L[i]);
-              if(span>CAL_SPAN_MIN_PX){
-                scalePxPerCm = span / CAL_HAND_CM;
-                lastCalibTime = performance.now();
-                setStatus(`Calibrado: ${scalePxPerCm.toFixed(2)} px/cm`, "ok");
+    // ===== Bucle principal =====
+    async function loop(){
+      if(!running) return;
+      updateFps(); ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      let fingers=0;
+      // Manos: calibración
+      if(handLandmarker){
+        try{
+          const rh=handLandmarker.detectForVideo(video,performance.now());
+          if(rh){
+            const L=rh.landmarks||rh.handLandmarks||[], H=rh.handedness||rh.handednesses||[];
+            for(let i=0;i<L.length;i++){
+              drawHand(L[i]);
+              const handed = (H[i]&&H[i][0]&&H[i][0].categoryName)?H[i][0].categoryName:"Unknown";
+              const f = countFingersForHand(L[i], handed);
+              fingers = Math.max(fingers, f);
+              if(f===5){
+                const span = handSpanPx(L[i]);
+                if(span>CAL_SPAN_MIN_PX){
+                  scalePxPerCm = span / CAL_HAND_CM;
+                  kPxcm.textContent = scalePxPerCm.toFixed(2);
+                  setStatus("Calibrado (mano 5 dedos)","ok");
+                }
               }
             }
-            // conservar una mano válida para visualización/cálculo (primera)
-            if(!handLmk) handLmk = L[i];
           }
-        }
-      }catch(_){}
-    }
-
-    // Pose (para altura/peso)
-    let heightCm=null, widthCm=null, weightKg=null, bmi=null;
-    if(poseLandmarker){
-      try{
-        const rp=poseLandmarker.detectForVideo(video,performance.now());
-        if(rp?.landmarks?.length){
-          const lmk = rp.landmarks[0];
-          drawPoseSkeleton(lmk);
-          if(scalePxPerCm){
-            heightCm = calcHeightCm(lmk);
-            widthCm  = calcWidthCm(lmk);
-            if(heightCm && widthCm){
-              // Correcciones plausibles
-              heightCm = clip(heightCm, HEIGHT_RANGE);
-              weightKg = clip(estimateWeightKg(heightCm, widthCm), WEIGHT_RANGE);
-              bmi = weightKg / ((heightCm/100)**2);
-            }
-          }
-        }
-      }catch(_){}
-    }
-
-    // KPIs originales
-    mFaces.textContent=String(faces);
-    mHands.textContent=String(hands);
-    mFingers.textContent=String(fingers);
-    mExpr.textContent=expr;
-
-    // Duración emoción (sin doble conteo)
-    const nowTS=Date.now();
-    if(expr!=="–" && expr!==lastEmotionLabel){
-      emotionDuration[lastEmotionLabel]+= nowTS - currentEmotionStart;
-      currentEmotionStart=nowTS; lastEmotionChange=nowTS; lastEmotionLabel=expr;
-    }
-
-    // --- Muestreo temporizado (1.5 s) para ambas actividades ---
-    const t = performance.now();
-    if (t >= nextSampleAt) {
-      // actividad 1 (emociones/dedos)
-      if (expr !== "–") emotionHistory.push(expr);
-      fingerHistory.push(fingers);
-      if (emotionHistory.length > MAX_HISTORY) emotionHistory.splice(0, emotionHistory.length - MAX_HISTORY);
-      if (fingerHistory.length  > MAX_HISTORY) fingerHistory.splice(0,  fingerHistory.length  - MAX_HISTORY);
-      updateStats();
-
-      // actividad 2 (estatura/peso)
-      if (heightCm && weightKg) {
-        hwSamples.push({h:heightCm, w:weightKg, bmi:bmi});
-        if (hwSamples.length > MAX_HISTORY) hwSamples.splice(0, hwSamples.length - MAX_HISTORY);
-        updateHWChart();
+        }catch(_){}
       }
 
-      nextSampleAt += SAMPLE_INTERVAL_MS;
+      // Pose → altura/peso (si calibrado)
+      let heightCm=null, widthCm=null, weightKg=null, bmi=null;
+      if(poseLandmarker){
+        try{
+          const rp=poseLandmarker.detectForVideo(video,performance.now());
+          if(rp?.landmarks?.length){
+            const lmk = rp.landmarks[0];
+            drawPoseSkeleton(lmk);
+            if(scalePxPerCm){
+              heightCm = calcHeightCm(lmk);
+              widthCm  = calcWidthCm(lmk);
+              if(heightCm && widthCm){
+                heightCm = clip(heightCm, HEIGHT_RANGE);
+                weightKg = clip(estimateWeightKg(heightCm, widthCm), WEIGHT_RANGE);
+                bmi = weightKg / ((heightCm/100)**2);
+              }
+            }
+          }
+        }catch(_){}
+      }
+
+      // Muestreo cada 1.5 s
+      const t=performance.now();
+      if(t>=nextSampleAt){
+        if(scalePxPerCm && heightCm && weightKg){
+          const rec = { t:new Date().toISOString(), h:heightCm, w:weightKg, bmi:bmi, pxcm:scalePxPerCm };
+          samples.push(rec);
+          if(samples.length>MAX_HISTORY) samples.splice(0, samples.length - MAX_HISTORY);
+          // KPIs
+          kNSamples.textContent=String(samples.length);
+          kHLast.textContent = heightCm.toFixed(1);
+          kWLast.textContent = weightKg.toFixed(1);
+          kBmiLast.textContent = bmi.toFixed(1);
+          updateCharts();
+        }
+        nextSampleAt += SAMPLE_INTERVAL_MS;
+      }
+
+      requestAnimationFrame(loop);
     }
 
-    requestAnimationFrame(loop);
-  }
-
-  /* ======== Arranque ======== */
-  btn.addEventListener("click", async ()=>{
-    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Iniciando…';
-    try{
-      await startCamera(); await importTasksVision(); await initModels();
-      running=true; loop(); btn.innerHTML='<i class="fas fa-play"></i> Laboratorio Activo';
-    }catch(e){
-      setStatus(`Error: ${e?.message||e}`,"err");
-      btn.disabled=false; btn.innerHTML='<i class="fas fa-camera"></i> Iniciar Laboratorio';
+    // ===== CSV =====
+    function downloadCsv(){
+      if(!samples.length) return;
+      const header = "timestamp,estatura_cm,peso_kg,imc,px_por_cm\n";
+      const rows = samples.map(s=>[s.t,s.h.toFixed(2),s.w.toFixed(2),s.bmi.toFixed(2),s.pxcm.toFixed(4)].join(",")).join("\n");
+      const blob = new Blob([header+rows],{type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "regresion_estatura_peso.csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
-  });
-</script>
 
+    // ===== Eventos =====
+    btnStart.addEventListener("click", async ()=>{
+      btnStart.disabled=true; btnStart.innerHTML='<i class="fas fa-spinner fa-spin"></i> Iniciando…';
+      try{
+        await startCamera(); await importTasksVision(); await initModels();
+        running=true; loop();
+        btnStart.innerHTML='<i class="fas fa-circle-stop"></i> Detener';
+        btnStart.disabled=false;
+        btnStart.onclick = ()=>{
+          running=false; btnStart.onclick=null; btnStart.textContent="Iniciar"; btnStart.disabled=false;
+          setStatus("Detenido","warn");
+        };
+        setStatus("Operando · calibra mostrando 5 dedos","ok");
+      }catch(e){
+        setStatus(`Error: ${e?.message||e}`,"err");
+        btnStart.disabled=false; btnStart.innerHTML='<i class="fas fa-video"></i> Iniciar';
+      }
+    });
 
+    btnReset.addEventListener("click", ()=>{
+      samples.length=0;
+      kNSamples.textContent="0"; kHLast.textContent=kWLast.textContent=kBmiLast.textContent="–";
+      hwChart.data.datasets[0].data=[]; hwChart.data.datasets[1].data=[]; hwChart.update();
+      hHist.data.datasets[0].data=Array(hBins.length).fill(0); hHist.update();
+      wHist.data.datasets[0].data=Array(wBins.length).fill(0); wHist.update();
+      nextSampleAt = performance.now() + SAMPLE_INTERVAL_MS;
+      setStatus("Datos reiniciados","warn");
+    });
+
+    btnCsv.addEventListener("click", downloadCsv);
+  </script>
 </body>
 </html>
